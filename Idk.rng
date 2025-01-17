@@ -1,0 +1,105 @@
+-- Gui to Lua
+-- Version: 3.2
+
+-- Instances:
+
+local ScreenGui = Instance.new("ScreenGui")
+local TextButton = Instance.new("TextButton")
+local Frame = Instance.new("Frame")
+
+-- Properties:
+
+ScreenGui.ResetOnSpawn = false -- Prevent the GUI from resetting on player respawn
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+TextButton.Parent = ScreenGui
+TextButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Default to red (inactive)
+TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextButton.BorderSizePixel = 0
+TextButton.Position = UDim2.new(0.438475668, 0, 0.502433896, 0)
+TextButton.Size = UDim2.new(0, 346, 0, 50)
+TextButton.Font = Enum.Font.SourceSans
+TextButton.Text = "ENABLE AND RAPE THIS SHITTY GAME [Press Again if u want to disable it!]"
+TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextButton.TextSize = 14.000
+
+Frame.Parent = TextButton
+Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BorderSizePixel = 0
+Frame.Size = UDim2.new(0, 100, 0, 100)
+Frame.Visible = false
+Frame.Active = true
+Frame.Draggable = true
+
+-- Variables:
+local isActive = false -- To track the state
+local connection -- To store the connection of the script
+
+-- Functionality:
+TextButton.MouseButton1Click:Connect(function()
+    if not isActive then
+        -- Activate the script
+        isActive = true
+        TextButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green for active
+
+        local l = game:GetService("Workspace").Sanses
+        connection = game:GetService("RunService").Stepped:Connect(function()
+            task.spawn(function()
+                if l then 
+                    for _, v in next, l:GetChildren() do 
+                        if v:FindFirstChild("Main") and v:FindFirstChild("Main"):FindFirstChildOfClass("ClickDetector") then 
+                            fireclickdetector(v:FindFirstChild("Main"):FindFirstChildOfClass("ClickDetector"))
+                        end 
+                    end
+                end
+            end)
+        end)
+    else
+        -- Deactivate the script
+        isActive = false
+        TextButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red for inactive
+
+        if connection then
+            connection:Disconnect() -- Disconnect the script
+            connection = nil
+        end
+    end
+end)
+
+-- Make the GUI draggable
+local UIS = game:GetService("UserInputService")
+local dragging, dragInput, dragStart, startPos
+
+TextButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = TextButton.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+TextButton.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        TextButton.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
